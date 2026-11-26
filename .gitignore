@@ -1,0 +1,14 @@
+# data is rebuilt with src/download.py, never committed
+data/
+data/exploration/
+
+# kept local, not shared
+notebooks/
+CLAUDE.md
+CLAUDE.local.md
+
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
