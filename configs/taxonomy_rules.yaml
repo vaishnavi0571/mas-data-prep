@@ -1,0 +1,71 @@
+# Every decision the pipeline makes is written here, with the reason next to it.
+# The code only applies what this file says.
+
+paths:
+  raw: data/raw              # downloads, never edited
+  processed: data/processed  # pipeline outputs
+
+# ================================================================ sources
+# Revisions are pinned so the same files are downloaded every time.
+sources:
+  mascope:
+    repo: mascope/mascope-bench
+    revision: 07fcb9f0d65f6f0423d2d77a4a8f51742acf7b27
+    files: [MAST-clean.jsonl, LG-Ctrl.jsonl, Inject-Mix.jsonl, README.md, lofo_splits.json]
+    expected_rows: {MAST-clean.jsonl: 851, LG-Ctrl.jsonl: 408, Inject-Mix.jsonl: 961}
+
+  whowhenpro:
+    # Official release (linked from whowhenpro.github.io). The anonymous NeurIPS copy
+    # (tmpxv7/who-when-pro) is not used.
+    repo: Leoxx/whowhen_pro
+    revision: 0bd196c8a040841c4ae167ab33cc8151de246f1f
+    files: [README.md, taxonomy.yaml, data/text.jsonl, data/video.jsonl]
+    expected_rows: {text.jsonl: 6257, video.jsonl: 916, pixelcraft.jsonl: 2402}
+    # data/image.jsonl is 6.8 GB because images are embedded. It is streamed once (its SHA-256 is
+    # checked against Hugging Face) and only the PixelCraft rows are kept: the text exactly as
+    # released, each embedded image saved once as a file named by its SHA-1 fingerprint, and the
+    # fingerprint left in the text where the image was, as {"__image__": <fingerprint>,
+    # "base64_chars": <length of the base64 text>}.
+    # Fingerprint = SHA-1 of the image's base64 text as released (not of the PNG file), so it
+    # identifies the exact released image; hashing a saved PNG gives a different value.
+    # The other image/GUI frameworks are not downloaded: we checked every row and none
+    # records a model name.
+    pixelcraft_extract: {from: data/image.jsonl, to: pixelcraft.jsonl, images: pixelcraft_images}
+
+# ================================================================ architecture
+# MAScope labels every trace with its own topology (guo_topology), and one framework
+# (LangGraph) appears under all four, so MAScope's label is used as given.
+# Frameworks without a label in their dataset are mapped here:
+architecture_by_framework:
+  pixelcraft: Centralized   # the paper's own description calls it multi-agent: a planner directing
+                            # reasoner / grounding / critic agents (every trace lists 5 agents; 4 speak).
+                            # Table 7 of the paper calls it single-agent; we follow the description and the data.
+
+# ================================================================ failure origin
+# synthetic  = the failure was injected on purpose
+#              (LG-Ctrl anomaly_injected, Inject-Mix anomaly_type set, every Who&When Pro trace)
+# natural    = not injected, and annotators found at least one failure (MAST-clean MAST codes)
+# no_failure = neither of the above
+
+# ================================================================ filters (applied in this order)
+dedup: true            # identical trajectory text = one trace. If the copies agree on architecture
+                       # and failure origin, keep one; if they disagree, the label can't be
+                       # trusted, so drop every copy.
+require_model: true    # model family is the end goal, so a trace with no recorded model can't be placed
+drop_no_failure: true  # the task is about failures; traces that did not fail are excluded
+
+# ================================================================ model families
+# Raw model name -> family (vendor model line). The first matching regex wins (case-insensitive).
+# Decision: we cluster by family, not by version, so variants of one model line share a family
+# (gpt, gpt-mini and GPT-4o are all GPT). The raw name stays in its own column, so the
+# versions remain visible inside each family.
+model_families:
+  - {pattern: "^gpt",      family: GPT}       # GPT-4o, gpt, gpt-mini
+  - {pattern: "^claude",   family: Claude}    # Claude, claude
+  - {pattern: "^gemini",   family: Gemini}    # gemini, gemini-3, gemini-3-flash-preview
+  - {pattern: "^qwen",     family: Qwen}
+  - {pattern: "llama",     family: Llama}     # CodeLlama (Meta's Llama line)
+  - {pattern: "^deepseek", family: DeepSeek}
+  - {pattern: "^glm",      family: GLM}
+  - {pattern: "^minimax",  family: MiniMax}
+  - {pattern: "^doubao",   family: Doubao}
