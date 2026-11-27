@@ -38,7 +38,8 @@ sources:
 # Frameworks without a label in their dataset are mapped here:
 architecture_by_framework:
   pixelcraft: Centralized   # the paper's own description calls it multi-agent: a planner directing
-                            # reasoner / grounding / critic agents (every trace lists 5 agents; 4 speak).
+                            # reasoner / grounding / critic agents (every trace lists 5 agents; the summarizer
+                            # never speaks, so at most 4 do, and in 106 kept traces the planner answers alone).
                             # Table 7 of the paper calls it single-agent; we follow the description and the data.
 
 # ================================================================ failure origin

@@ -74,8 +74,11 @@ def strip_images(x, image_dir):
     """Replace every embedded image with its fingerprint (and save the image as a file);
     leave everything else untouched.
 
-    An embedded image is {"__type__": "PIL.Image", "data": <base64 text>} (other fields, if any,
-    are not kept; the 2,358 PixelCraft images checked during exploration had none). It becomes {"__image__": <fingerprint>, "base64_chars": <length of data>}.
+    An embedded image is {"__type__": "PIL.Image", "data": <base64 text>}. It becomes
+    {"__image__": <fingerprint>, "base64_chars": <length of data>}; any other key in the image
+    object is dropped. The PixelCraft rows hold 8,068 image references: the 2,358 inside `task`
+    were checked during exploration and have no other keys; the 5,710 inside `trajectory` were
+    not checked.
     The fingerprint is the SHA-1 of the base64 text as released, not of the decoded PNG file,
     so hashing a saved PNG does not reproduce its name."""
     if isinstance(x, dict):
