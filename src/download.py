@@ -1,6 +1,7 @@
 """Download MAScope and Who&When Pro into data/raw/, at the revisions pinned in configs/taxonomy_rules.yaml.
 
-Files that are already present and match Hugging Face's SHA-256 are skipped.
+Hugging Face publishes a SHA-256 only for large files. A file that is already present is skipped
+if it matches that SHA-256, or if it has none. The row count of every .jsonl file is then checked.
 Run from the repo root:  python src/download.py
 """
 import base64

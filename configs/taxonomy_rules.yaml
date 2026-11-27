@@ -45,7 +45,7 @@ architecture_by_framework:
 # ================================================================ failure origin
 # synthetic  = the failure was injected on purpose
 #              (LG-Ctrl anomaly_injected, Inject-Mix anomaly_type set, every Who&When Pro trace)
-# natural    = not injected, and annotators found at least one failure (MAST-clean MAST codes)
+# natural    = not injected, and its MAST annotations mark at least one failure (MAST-clean)
 # no_failure = neither of the above
 
 # ================================================================ filters (applied in this order)

@@ -2,8 +2,9 @@
 
 Dataset quirks handled here:
   * task / trajectory / ground_truth / extras are stored as JSON strings.
-  * The model, when recorded, is in extras.agents[].model. Only PixelCraft records it,
-    and all agents in a trace share the same model.
+  * The model, when recorded, is in extras.agents[].model. Only PixelCraft records a model,
+    in 1,504 of its 2,402 traces (the rest are dropped by the model filter), and all agents
+    in a trace share the same model.
   * Every trace has exactly one injected error (the benchmark's design).
   * No architecture label is given; it is mapped per framework in the config.
 """

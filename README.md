@@ -8,12 +8,11 @@ each leaf's traces by **model family**.
 
 ```bash
 pip install -r requirements.txt
-python src/download.py        # data/raw/: pinned revisions, checked by SHA-256 and row counts
+python src/download.py        # data/raw/: pinned revisions; .jsonl row counts checked, large files also by SHA-256
 python src/build_dataset.py   # data/processed/: dedup, filters, leaves, families, trace export, validation
 ```
 
-`download.py` takes about an hour the first time, because it streams the 6.8 GB image split. Then open
-`notebooks/02_audit_leaves.ipynb` for the summary tables and charts.
+`download.py` takes about an hour the first time, because it streams the 6.8 GB image split.
 
 ## Outputs (`data/processed/`)
 
@@ -39,9 +38,6 @@ src/
   export.py                   writes the actual traces into clusters/<leaf>/<family>.jsonl
   validate.py                 hard checks; the build stops if any fail
   build_dataset.py            entry point; writes data/processed/
-notebooks/
-  01_eda.ipynb                exploration of both datasets
-  02_audit_leaves.ipynb       final tables and charts
 ```
 
 `data/` is not committed. Running `download.py` rebuilds it.
@@ -51,9 +47,9 @@ notebooks/
 | Step | Rule |
 |---|---|
 | Architecture | MAScope: the trace's own `guo_topology` label. Who&When Pro: per framework in the config (PixelCraft → Centralized) |
-| Failure origin | **synthetic**: the failure was injected. **natural**: not injected, but annotators found at least one failure. **no failure**: neither |
+| Failure origin | **synthetic**: the failure was injected. **natural**: not injected, but its MAST annotations mark at least one failure. **no failure**: neither |
 | Duplicates | identical trajectory text counts as one trace. If the copies' labels agree, keep one; if they disagree, drop every copy |
-| Model filter | keep only traces that name their model (in Who&When Pro, only PixelCraft does) |
+| Model filter | keep only traces that name their model. In Who&When Pro only PixelCraft does, in 1,504 of its 2,402 traces; those 1,504 are kept and the other 898 dropped |
 | Failure filter | drop traces with no failure |
 | Model family | regex on the raw model name (config). The raw name is kept alongside |
 
